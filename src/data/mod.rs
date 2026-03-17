@@ -52,3 +52,6 @@ mod tests {
         assert!(!entries.is_empty());
     }
 }
+
+pub mod custom;
+pub use custom::CustomStore;
