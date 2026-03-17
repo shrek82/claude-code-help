@@ -23,7 +23,13 @@ pub fn render_status_bar(frame: &mut Frame, app: &App, area: Rect) {
     let shortcuts = if app.input_mode == InputMode::Searching {
         "Esc:关闭 Enter:确认"
     } else {
-        "TAB:切换列 ↑/↓/j/k:导航 F/搜索：搜索 Q/Esc:退出"
+        "TAB:切换列 ↑/↓/j/k:导航 F:搜索 C:复制 Q/Esc:退出"
+    };
+
+    // 复制反馈消息（如果有）
+    let feedback = match &app.copy_feedback {
+        Some(msg) => format!(" ● {} ", msg),
+        None => String::new(),
     };
 
     let content = Line::from(vec![
@@ -47,6 +53,10 @@ pub fn render_status_bar(frame: &mut Frame, app: &App, area: Rect) {
         Span::styled(
             format!(" {} ", shortcuts),
             Style::default().fg(Color::DarkGray),
+        ),
+        Span::styled(
+            feedback,
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
         ),
     ]);
 

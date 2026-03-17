@@ -29,6 +29,7 @@ fn handle_normal_mode(app: &mut App, key: KeyCode) {
         KeyCode::Up | KeyCode::Char('k') => app.prev_in_section(),
         KeyCode::PageDown => app.page_down(),
         KeyCode::PageUp => app.page_up(),
+        KeyCode::Char('c') => app.copy_selection(), // C 复制
         KeyCode::Char('f') | KeyCode::Char('/') => app.toggle_search(),
         _ => {}
     }

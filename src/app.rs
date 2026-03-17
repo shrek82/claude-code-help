@@ -13,6 +13,7 @@ pub struct App {
     pub input_mode: InputMode,
     pub search_query: String,
     pub should_quit: bool,
+    pub copy_feedback: Option<String>, // 复制反馈消息
 }
 
 impl Default for App {
@@ -24,6 +25,7 @@ impl Default for App {
             input_mode: InputMode::Normal,
             search_query: String::new(),
             should_quit: false,
+            copy_feedback: None,
         }
     }
 }
@@ -142,6 +144,22 @@ impl App {
             // 确保选中项在可见区域内
             if self.selected_index_in_section < self.scroll_offsets[self.current_section] {
                 self.scroll_offsets[self.current_section] = self.selected_index_in_section;
+            }
+        }
+    }
+
+    // 复制选中的命令到剪贴板
+    pub fn copy_selection(&mut self) {
+        let entries = self.get_section_entries(self.current_section);
+        if let Some((key, desc)) = entries.get(self.selected_index_in_section) {
+            let text = format!("{} - {}", key, desc);
+            match arboard::Clipboard::new().and_then(|mut c| c.set_text(&text)) {
+                Ok(_) => {
+                    self.copy_feedback = Some(format!("已复制：{}", key));
+                }
+                Err(_) => {
+                    self.copy_feedback = Some("复制失败".into());
+                }
             }
         }
     }
