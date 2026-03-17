@@ -59,68 +59,87 @@ pub fn render_search_popup(frame: &mut Frame, app: &mut App) {
 
     frame.render_widget(input, chunks[0]);
 
-    // 渲染结果列表
-    if !app.search_query.is_empty() {
-        let items: Vec<ListItem> = if matching_items.is_empty() {
-            vec![
-                ListItem::new(Line::from(Span::styled(
-                    "无匹配结果",
-                    Style::default().fg(Color::DarkGray),
-                ))),
-                ListItem::new(Line::from(Span::styled(
-                    "提示：尝试其他关键词，如 \"复制\"、\"git\"、\"会话\"",
-                    Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC),
-                ))),
-            ]
-        } else {
-            matching_items
-                .iter()
-                .enumerate()
-                .map(|(idx, (section_idx, _local_idx, key, desc))| {
-                    let section_name = match section_idx {
-                        0 => "CLI 参考",
-                        1 => "内置命令",
-                        _ => "快捷键",
-                    };
+    // 渲染结果列表区域 - 始终显示，即使没有输入关键字
+    let items: Vec<ListItem> = if app.search_query.is_empty() {
+        // 未输入关键字时显示提示
+        vec![
+            ListItem::new(Line::from(Span::styled(
+                "输入关键词搜索命令和快捷键",
+                Style::default().fg(Color::DarkGray).add_modifier(Modifier::BOLD),
+            ))),
+            ListItem::new(Line::from(Span::styled(
+                "示例：复制、git、会话、粘贴",
+                Style::default().fg(Color::DarkGray),
+            ))),
+        ]
+    } else if matching_items.is_empty() {
+        vec![
+            ListItem::new(Line::from(Span::styled(
+                "无匹配结果",
+                Style::default().fg(Color::DarkGray),
+            ))),
+            ListItem::new(Line::from(Span::styled(
+                "提示：尝试其他关键词，如 \"复制\"、\"git\"、\"会话\"",
+                Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC),
+            ))),
+        ]
+    } else {
+        matching_items
+            .iter()
+            .enumerate()
+            .map(|(idx, (section_idx, _local_idx, key, desc))| {
+                let section_name = match section_idx {
+                    0 => "CLI 参考",
+                    1 => "内置命令",
+                    _ => "快捷键",
+                };
 
-                    // 构建高亮行：[分区] key - desc
-                    let mut spans = vec![
-                        Span::styled(format!("[{}] ", section_name), Style::default().fg(Color::DarkGray)),
-                    ];
+                // 构建高亮行：[分区] key - desc
+                let mut spans = vec![
+                    Span::styled(format!("[{}] ", section_name), Style::default().fg(Color::DarkGray)),
+                ];
 
-                    // 高亮 key 中的匹配
-                    let key_spans = highlight_text(key, &app.search_query, Color::Cyan);
-                    spans.extend(key_spans);
+                // 高亮 key 中的匹配
+                let key_spans = highlight_text(key, &app.search_query, Color::Cyan);
+                spans.extend(key_spans);
 
-                    spans.push(Span::raw(" - "));
+                spans.push(Span::raw(" - "));
 
-                    // 高亮 desc 中的匹配
-                    let desc_spans = highlight_text(desc, &app.search_query, Color::Green);
-                    spans.extend(desc_spans);
+                // 高亮 desc 中的匹配
+                let desc_spans = highlight_text(desc, &app.search_query, Color::Green);
+                spans.extend(desc_spans);
 
-                    let mut item = ListItem::new(Line::from(spans));
+                let mut item = ListItem::new(Line::from(spans));
 
-                    // 高亮当前选中的搜索结果
-                    if idx == app.search_selected_index {
-                        item = item.style(Style::default().bg(Color::DarkGray).fg(Color::White).add_modifier(Modifier::BOLD));
-                    }
+                // 高亮当前选中的搜索结果
+                if idx == app.search_selected_index {
+                    item = item.style(Style::default().bg(Color::DarkGray).fg(Color::White).add_modifier(Modifier::BOLD));
+                }
 
-                    item
-                })
-                .collect()
-        };
+                item
+            })
+            .collect()
+    };
 
-        let list = List::new(items)
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(ratatui::widgets::BorderType::Rounded)
-                    .title(format!(" 搜索结果 ({} 项) ", matching_items.len()))
-                    .style(Style::default().fg(Color::Green)),
-            );
+    // 根据状态设置边框样式和标题
+    let (border_style, title_text) = if app.search_query.is_empty() {
+        (Style::default().fg(Color::DarkGray), " 输入关键词 ".to_string())
+    } else if matching_items.is_empty() {
+        (Style::default().fg(Color::Yellow), " 无匹配结果 ".to_string())
+    } else {
+        (Style::default().fg(Color::Green), format!(" 搜索结果 ({} 项) ", matching_items.len()))
+    };
 
-        frame.render_widget(list, chunks[1]);
-    }
+    let list = List::new(items)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(ratatui::widgets::BorderType::Rounded)
+                .title(title_text)
+                .style(border_style),
+        );
+
+    frame.render_widget(list, chunks[1]);
 }
 
 /// 高亮文本中匹配的部分
