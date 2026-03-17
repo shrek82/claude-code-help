@@ -59,9 +59,9 @@ impl App {
 
         for entry in all_entries {
             let section_idx = match entry.category {
-                Category::Shortcuts => 0,
-                Category::SlashCommands => 1,
-                Category::CliCommands => 2,
+                Category::CliCommands => 0,    // 第 1 列：CLI 参考
+                Category::SlashCommands => 1,  // 第 2 列：内置命令
+                Category::Shortcuts => 2,      // 第 3 列：快捷键
             };
             let local_idx = section_counts[section_idx];
             section_counts[section_idx] += 1;

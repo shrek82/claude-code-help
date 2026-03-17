@@ -61,9 +61,9 @@ pub fn render_search_popup(frame: &mut Frame, app: &mut App) {
                 .enumerate()
                 .map(|(idx, (section_idx, _local_idx, key, desc))| {
                     let section_name = match section_idx {
-                        0 => "快捷键",
-                        1 => "斜杠命令",
-                        _ => "CLI",
+                        0 => "CLI 参考",
+                        1 => "内置命令",
+                        _ => "快捷键",
                     };
 
                     // 构建高亮行：[分区] key - desc
