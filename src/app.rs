@@ -121,6 +121,31 @@ impl App {
         }
     }
 
+    // 快速向下翻页（PageDown）
+    pub fn page_down(&mut self) {
+        let count = self.get_section_count(self.current_section);
+        if count > 0 {
+            let scroll_offset = self.scroll_offsets[self.current_section];
+            self.selected_index_in_section = (self.selected_index_in_section + 10).min(count - 1);
+            // 确保选中项在可见区域内
+            if self.selected_index_in_section >= scroll_offset + 20 {
+                self.scroll_offsets[self.current_section] = self.selected_index_in_section - 19;
+            }
+        }
+    }
+
+    // 快速向上翻页（PageUp）
+    pub fn page_up(&mut self) {
+        let count = self.get_section_count(self.current_section);
+        if count > 0 {
+            self.selected_index_in_section = self.selected_index_in_section.saturating_sub(10);
+            // 确保选中项在可见区域内
+            if self.selected_index_in_section < self.scroll_offsets[self.current_section] {
+                self.scroll_offsets[self.current_section] = self.selected_index_in_section;
+            }
+        }
+    }
+
     pub fn toggle_search(&mut self) {
         self.input_mode = match self.input_mode {
             InputMode::Normal => {

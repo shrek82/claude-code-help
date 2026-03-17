@@ -1,10 +1,14 @@
 use crate::app::{App, InputMode};
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use std::time::Duration;
 
 pub fn handle_event(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     if crossterm::event::poll(Duration::from_millis(100))? {
         if let Event::Key(key) = event::read()? {
+            // 只处理按键按下事件，避免重复触发
+            if key.kind != KeyEventKind::Press {
+                return Ok(());
+            }
             match app.input_mode {
                 InputMode::Normal => handle_normal_mode(app, key.code),
                 InputMode::Searching => handle_searching_mode(app, key.code),
@@ -23,6 +27,8 @@ fn handle_normal_mode(app: &mut App, key: KeyCode) {
         KeyCode::Char('h') => app.prev_section(), // vim 风格：h 左
         KeyCode::Down | KeyCode::Char('j') => app.next_in_section(),
         KeyCode::Up | KeyCode::Char('k') => app.prev_in_section(),
+        KeyCode::PageDown => app.page_down(),
+        KeyCode::PageUp => app.page_up(),
         KeyCode::Char('f') | KeyCode::Char('/') => app.toggle_search(),
         _ => {}
     }
