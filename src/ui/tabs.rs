@@ -119,13 +119,13 @@ fn render_section(
     let border_style = if is_active {
         Style::default().fg(color).add_modifier(Modifier::BOLD)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(color)
     };
 
     let title_style = if is_active {
         Style::default().fg(color).add_modifier(Modifier::BOLD)
     } else {
-        Style::default().fg(Color::DarkGray)
+        Style::default().fg(color)
     };
 
     let list = List::new(items)
