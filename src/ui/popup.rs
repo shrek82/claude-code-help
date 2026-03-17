@@ -2,12 +2,13 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Modifier},
-    widgets::{Block, Borders, Clear, Paragraph},
+    text::{Line, Span},
+    widgets::{Block, Borders, Clear, Paragraph, List, ListItem},
 };
 use crate::app::App;
 
 pub fn render_search_popup(frame: &mut Frame, app: &App) {
-    let area = centered_rect(60, 20, frame.area());
+    let area = centered_rect(50, 40, frame.area());
 
     // 首先清除背景
     frame.render_widget(Clear, area);
@@ -16,46 +17,73 @@ pub fn render_search_popup(frame: &mut Frame, app: &App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // 输入框
-            Constraint::Min(0),    // 结果
+            Constraint::Min(0),    // 结果列表
         ])
         .split(area);
 
-    // 渲染输入框
+    // 渲染输入框 - 使用圆角边框
     let input = Paragraph::new(app.search_query.as_str())
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title("搜索 (Esc 关闭)")
+                .border_type(ratatui::widgets::BorderType::Rounded)
+                .title(" 搜索 (Esc 关闭) ")
                 .style(Style::default().fg(Color::Yellow)),
-        )
-        .style(Style::default().add_modifier(Modifier::REVERSED));
+        );
 
     frame.render_widget(input, chunks[0]);
 
-    // 渲染结果 - 计算匹配数量
-    let mut match_count = 0;
+    // 渲染结果列表
     let entries = app.get_all_entries_for_search();
-    for (_, _, key, desc) in entries.iter() {
+    let mut matching_items: Vec<(usize, usize, String, String)> = Vec::new();
+
+    for (section_idx, local_idx, key, desc) in entries.iter() {
         if key.contains(&app.search_query) || desc.contains(&app.search_query) {
-            match_count += 1;
+            matching_items.push((*section_idx, *local_idx, key.clone(), desc.clone()));
         }
     }
 
     if !app.search_query.is_empty() {
-        let results = if match_count == 0 {
-            "无匹配结果"
+        let items: Vec<ListItem> = if matching_items.is_empty() {
+            vec![ListItem::new("无匹配结果")]
         } else {
-            &format!("找到 {} 个匹配", match_count)
+            matching_items
+                .iter()
+                .map(|(section_idx, _local_idx, key, desc)| {
+                    let section_name = match section_idx {
+                        0 => "快捷键",
+                        1 => "斜杠命令",
+                        _ => "CLI",
+                    };
+
+                    // 高亮匹配的词
+                    let match_style = if app.search_query.is_empty() {
+                        Style::default()
+                    } else {
+                        // 检查是 key 还是 desc 匹配
+                        if key.to_lowercase().contains(&app.search_query.to_lowercase()) {
+                            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                        } else {
+                            Style::default().fg(Color::White)
+                        }
+                    };
+
+                    let content = format!("[{}] {} - {}", section_name, key, desc);
+                    ListItem::new(Line::from(Span::styled(content, match_style)))
+                })
+                .collect()
         };
 
-        let result_text = Paragraph::new(results.to_string())
+        let list = List::new(items)
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title("搜索结果"),
+                    .border_type(ratatui::widgets::BorderType::Rounded)
+                    .title(format!(" 搜索结果 ({} 项) ", matching_items.len()))
+                    .style(Style::default().fg(Color::Green)),
             );
 
-        frame.render_widget(result_text, chunks[1]);
+        frame.render_widget(list, chunks[1]);
     }
 }
 
