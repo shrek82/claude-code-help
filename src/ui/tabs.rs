@@ -89,13 +89,8 @@ fn render_section(
     // 计算可用高度（减去边框和标题）
     let visible_height = area.height.saturating_sub(2) as usize; // 减去上下边框
 
-    // 计算滚动偏移，确保选中项可见
-    let mut scroll_offset = app.scroll_offset;
-    if app.selected_index_in_section < scroll_offset {
-        scroll_offset = app.selected_index_in_section;
-    } else if app.selected_index_in_section >= scroll_offset + visible_height {
-        scroll_offset = app.selected_index_in_section - visible_height + 1;
-    }
+    // 使用当前分区的滚动偏移
+    let scroll_offset = app.scroll_offsets[section_index];
 
     // 只渲染可见区域的条目
     let items: Vec<ListItem> = entries
@@ -122,9 +117,6 @@ fn render_section(
             ListItem::new(Line::from(Span::styled(content, style)))
         })
         .collect();
-
-    // 更新 scroll_offset
-    // 注意：这里我们不能直接修改 app，所以使用局部变量
 
     let border_style = if is_active {
         Style::default().fg(color).add_modifier(Modifier::BOLD)
