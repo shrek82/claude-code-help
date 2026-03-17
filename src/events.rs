@@ -16,7 +16,7 @@ pub fn handle_event(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 
 fn handle_normal_mode(app: &mut App, key: KeyCode) {
     match key {
-        KeyCode::Char('q') => app.should_quit = true,
+        KeyCode::Char('q') | KeyCode::Esc => app.should_quit = true,
         KeyCode::Char('f') | KeyCode::Char('/') => app.toggle_search(),
         KeyCode::Down | KeyCode::Char('j') => app.next_item(),
         KeyCode::Up | KeyCode::Char('k') => app.prev_item(),
