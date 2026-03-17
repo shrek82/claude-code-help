@@ -10,9 +10,9 @@ use crate::app::App;
 const SECTION_TITLES: [&str; 3] = ["CLI 参考", "内置命令", "快捷键"];
 
 const SECTION_COLORS: [Color; 3] = [
-    Color::Rgb(255, 140, 0),   // 橙色 - CLI 参考
+    Color::Rgb(0, 135, 255),   // 蓝色 - CLI 参考
     Color::Rgb(0, 200, 100),   // 绿色 - 内置命令
-    Color::Rgb(0, 135, 255),   // 蓝色 - 快捷键
+    Color::Rgb(255, 140, 0),   // 橙色 - 快捷键
 ];
 
 pub fn render_tabs(frame: &mut Frame, app: &mut App, area: ratatui::layout::Rect) {
