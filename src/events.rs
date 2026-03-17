@@ -1,51 +1,43 @@
 use crate::app::{App, InputMode};
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode};
 use std::time::Duration;
 
 pub fn handle_event(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     if crossterm::event::poll(Duration::from_millis(100))? {
         if let Event::Key(key) = event::read()? {
             match app.input_mode {
-                InputMode::Normal => handle_normal_mode(app, key),
-                InputMode::Searching => handle_searching_mode(app, key),
+                InputMode::Normal => handle_normal_mode(app, key.code),
+                InputMode::Searching => handle_searching_mode(app, key.code),
             }
         }
     }
     Ok(())
 }
 
-fn handle_normal_mode(app: &mut App, key: KeyEvent) {
-    match key.code {
+fn handle_normal_mode(app: &mut App, key: KeyCode) {
+    match key {
         KeyCode::Char('q') => app.should_quit = true,
         KeyCode::Char('f') | KeyCode::Char('/') => app.toggle_search(),
-        KeyCode::Right | KeyCode::Tab => app.next_tab(),
-        KeyCode::Left => app.prev_tab(),
-        KeyCode::Down => {
-            let len = app.get_current_entries().len();
-            if len > 0 {
-                app.selected_index = (app.selected_index + 1) % len;
-            }
-        }
-        KeyCode::Up => {
-            let len = app.get_current_entries().len();
-            if len > 0 {
-                app.selected_index = (app.selected_index + len - 1) % len;
-            }
-        }
-        KeyCode::Char('a') if app.current_tab == 2 => {
-            // 添加自定义条目（仅在 Custom 页）
+        KeyCode::Down | KeyCode::Char('j') => app.next_item(),
+        KeyCode::Up | KeyCode::Char('k') => app.prev_item(),
+        KeyCode::Char('a') => {
+            // 添加自定义条目
             app.add_custom_entry("NewKey".into(), "Description".into());
         }
-        KeyCode::Char('s') if app.current_tab == 2 => {
+        KeyCode::Char('s') => {
             // 保存
             let _ = app.save_custom_entries();
+        }
+        KeyCode::Char('d') => {
+            // 删除选中的自定义条目
+            app.delete_selected_custom();
         }
         _ => {}
     }
 }
 
-fn handle_searching_mode(app: &mut App, key: KeyEvent) {
-    match key.code {
+fn handle_searching_mode(app: &mut App, key: KeyCode) {
+    match key {
         KeyCode::Esc | KeyCode::Enter => app.toggle_search(),
         KeyCode::Backspace => {
             app.search_query.pop();
