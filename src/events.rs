@@ -19,16 +19,19 @@ pub fn handle_event(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn handle_normal_mode(app: &mut App, key: KeyCode) {
+    // 任何操作前先清除复制反馈
+    app.copy_feedback = None;
+
     match key {
         KeyCode::Char('q') | KeyCode::Esc => app.should_quit = true,
         KeyCode::Tab => app.next_section(),
         KeyCode::BackTab => app.prev_section(),
         KeyCode::Char('l') => app.next_section(), // vim 风格：l 右
         KeyCode::Char('h') => app.prev_section(), // vim 风格：h 左
-        KeyCode::Down | KeyCode::Char('j') => app.next_in_section(),
-        KeyCode::Up | KeyCode::Char('k') => app.prev_in_section(),
-        KeyCode::PageDown => app.page_down(),
-        KeyCode::PageUp => app.page_up(),
+        KeyCode::Down | KeyCode::Char('j') => app.next_in_section(app.visible_height),
+        KeyCode::Up | KeyCode::Char('k') => app.prev_in_section(app.visible_height),
+        KeyCode::PageDown => app.page_down(app.visible_height),
+        KeyCode::PageUp => app.page_up(app.visible_height),
         KeyCode::Char('c') | KeyCode::Enter => app.copy_selection(), // C 或 Enter 复制
         KeyCode::Char('f') | KeyCode::Char('/') => app.toggle_search(),
         _ => {}
@@ -47,6 +50,8 @@ fn handle_searching_mode(app: &mut App, key: KeyCode) {
             app.search_query.pop();
             app.update_search();
         }
+        KeyCode::Down | KeyCode::Char('j') => app.next_search_result(),
+        KeyCode::Up | KeyCode::Char('k') => app.prev_search_result(),
         KeyCode::Char(c) => {
             app.search_query.push(c);
             app.update_search();

@@ -1,3 +1,5 @@
+use once_cell::sync::Lazy;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Category {
     Shortcuts,
@@ -12,9 +14,8 @@ pub struct BuiltinEntry {
     pub category: Category,
 }
 
-impl BuiltinEntry {
-    pub fn all() -> Vec<Self> {
-        vec![
+static ENTRIES: Lazy<Vec<BuiltinEntry>> = Lazy::new(|| {
+    vec![
             // 快捷键 - 通用控制
             BuiltinEntry { key: "Ctrl+C".into(), description: "取消当前输入或生成".into(), category: Category::Shortcuts },
             BuiltinEntry { key: "Ctrl+D".into(), description: "退出 Claude Code 会话 (EOF)".into(), category: Category::Shortcuts },
@@ -130,7 +131,12 @@ impl BuiltinEntry {
             BuiltinEntry { key: "claude agents".into(), description: "列出所有已配置的 subagents".into(), category: Category::CliCommands },
             BuiltinEntry { key: "claude mcp".into(), description: "配置 MCP 服务器".into(), category: Category::CliCommands },
             BuiltinEntry { key: "claude remote-control".into(), description: "启动 Remote Control 会话".into(), category: Category::CliCommands },
-        ]
+    ]
+});
+
+impl BuiltinEntry {
+    pub fn all() -> &'static [BuiltinEntry] {
+        &ENTRIES
     }
 }
 

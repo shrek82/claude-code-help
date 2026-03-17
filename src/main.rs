@@ -41,7 +41,7 @@ fn run_app(
     app: &mut App,
 ) -> Result<(), Box<dyn std::error::Error>> {
     while !app.should_quit {
-        terminal.draw(|f| ui::render(f, app))?;
+        terminal.draw(|f| ui::render(f, &mut *app))?;
         events::handle_event(app)?;
     }
     Ok(())

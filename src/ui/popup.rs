@@ -7,7 +7,7 @@ use ratatui::{
 };
 use crate::app::App;
 
-pub fn render_search_popup(frame: &mut Frame, app: &App) {
+pub fn render_search_popup(frame: &mut Frame, app: &mut App) {
     let area = centered_rect(50, 40, frame.area());
 
     // 清除弹窗区域背景
@@ -45,11 +45,21 @@ pub fn render_search_popup(frame: &mut Frame, app: &App) {
 
     if !app.search_query.is_empty() {
         let items: Vec<ListItem> = if matching_items.is_empty() {
-            vec![ListItem::new("无匹配结果")]
+            vec![
+                ListItem::new(Line::from(Span::styled(
+                    "无匹配结果",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                ListItem::new(Line::from(Span::styled(
+                    "提示：尝试其他关键词，如 \"复制\"、\"git\"、\"会话\"",
+                    Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC),
+                ))),
+            ]
         } else {
             matching_items
                 .iter()
-                .map(|(section_idx, _local_idx, key, desc)| {
+                .enumerate()
+                .map(|(idx, (section_idx, _local_idx, key, desc))| {
                     let section_name = match section_idx {
                         0 => "快捷键",
                         1 => "斜杠命令",
@@ -57,7 +67,6 @@ pub fn render_search_popup(frame: &mut Frame, app: &App) {
                     };
 
                     // 构建高亮行：[分区] key - desc
-                    // 高亮匹配的文字部分
                     let mut spans = vec![
                         Span::styled(format!("[{}] ", section_name), Style::default().fg(Color::DarkGray)),
                     ];
@@ -72,7 +81,14 @@ pub fn render_search_popup(frame: &mut Frame, app: &App) {
                     let desc_spans = highlight_text(desc, &app.search_query, Color::Green);
                     spans.extend(desc_spans);
 
-                    ListItem::new(Line::from(spans))
+                    let mut item = ListItem::new(Line::from(spans));
+
+                    // 高亮当前选中的搜索结果
+                    if idx == app.search_selected_index {
+                        item = item.style(Style::default().bg(Color::DarkGray).fg(Color::White).add_modifier(Modifier::BOLD));
+                    }
+
+                    item
                 })
                 .collect()
         };

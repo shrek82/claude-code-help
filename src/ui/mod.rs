@@ -6,7 +6,7 @@ pub mod status_bar;
 use ratatui::Frame;
 use crate::app::{App, InputMode};
 
-pub fn render(frame: &mut Frame, app: &App) {
+pub fn render(frame: &mut Frame, app: &mut App) {
     let areas = layout::create_layout(frame.area());
     tabs::render_tabs(frame, app, areas.main_area);
     status_bar::render_status_bar(frame, app, areas.status_bar_area);

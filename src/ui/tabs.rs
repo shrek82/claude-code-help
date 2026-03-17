@@ -15,7 +15,7 @@ const SECTION_COLORS: [Color; 3] = [
     Color::Rgb(255, 140, 0),   // 橙色 - CLI 参考
 ];
 
-pub fn render_tabs(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {
+pub fn render_tabs(frame: &mut Frame, app: &mut App, area: ratatui::layout::Rect) {
     // 垂直分为：标题 + 三列内容
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -25,16 +25,19 @@ pub fn render_tabs(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {
         ])
         .split(area);
 
+    // 更新可见高度
+    app.visible_height = chunks[1].height.saturating_sub(2) as usize;
+
     // 渲染顶部标题
     render_header(frame, chunks[0]);
 
-    // 水平分为三列
+    // 水平分为三列 - 给中间斜杠命令更多空间
     let columns = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(33),
-            Constraint::Percentage(33),
-            Constraint::Percentage(34),
+            Constraint::Percentage(30),  // 快捷键
+            Constraint::Percentage(40),  // 斜杠命令（最长）
+            Constraint::Percentage(30),  // CLI 参考
         ])
         .split(chunks[1]);
 
@@ -84,7 +87,7 @@ fn render_section(
     color: Color,
     is_active: bool,
 ) {
-    let entries = app.get_section_entries(section_index);
+    let entries = app.get_entries_for_section(section_index);
 
     // 计算可用高度（减去边框和标题）
     let visible_height = area.height.saturating_sub(2) as usize; // 减去上下边框
