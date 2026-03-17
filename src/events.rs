@@ -1,5 +1,5 @@
 use crate::app::{App, InputMode};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use std::time::Duration;
 
 pub fn handle_event(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {

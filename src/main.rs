@@ -3,7 +3,7 @@ mod data;
 mod events;
 mod ui;
 
-use app::{App, InputMode};
+use app::App;
 use crossterm::{
     event::DisableMouseCapture,
     execute,
