@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Style, Modifier},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
 };
 use crate::app::App;
 
@@ -13,21 +13,66 @@ const SECTION_COLORS: [Color; 3] = [
     Color::Rgb(150, 100, 255), // 紫色 - 自定义
 ];
 
+const SECTION_TITLES: [&str; 3] = ["快捷键", "斜杠命令", "自定义"];
+
 pub fn render_tabs(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {
-    // 垂直分为三个区域
+    // 垂直分为：标题 + 三列内容
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Ratio(1, 3), // 快捷键
-            Constraint::Ratio(1, 3), // 斜杠命令
-            Constraint::Min(4),      // 自定义
+            Constraint::Length(3), // 顶部标题
+            Constraint::Min(0),    // 三列内容
         ])
         .split(area);
 
+    // 渲染顶部标题
+    render_header(frame, chunks[0]);
+
+    // 水平分为三列
+    let columns = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+            Constraint::Percentage(34),
+        ])
+        .split(chunks[1]);
+
     // 渲染三个分区
-    render_section(frame, app, chunks[0], 0, "快捷键", SECTION_COLORS[0]);
-    render_section(frame, app, chunks[1], 1, "斜杠命令", SECTION_COLORS[1]);
-    render_section(frame, app, chunks[2], 2, "自定义", SECTION_COLORS[2]);
+    for (i, title) in SECTION_TITLES.iter().enumerate() {
+        render_section(
+            frame,
+            app,
+            columns[i],
+            i,
+            title,
+            SECTION_COLORS[i],
+            app.current_section == i,
+        );
+    }
+}
+
+fn render_header(frame: &mut Frame, area: ratatui::layout::Rect) {
+    let date = chrono::Local::now().format("%Y年%m月%d日").to_string();
+    let title = format!(" Claude Code 功能速查   {} ", date);
+
+    let header = Paragraph::new(Line::from(vec![
+        Span::styled(
+            title,
+            Style::default()
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        ),
+    ]))
+    .alignment(ratatui::layout::Alignment::Center)
+    .block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title_style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+    );
+
+    frame.render_widget(header, area);
 }
 
 fn render_section(
@@ -37,11 +82,12 @@ fn render_section(
     section_index: usize,
     title: &str,
     color: Color,
+    is_active: bool,
 ) {
     let entries = app.get_section_entries(section_index);
 
-    // 计算全局索引偏移
-    let offset = match section_index {
+    // 计算全局索引偏移（用于搜索高亮）
+    let _offset = match section_index {
         0 => 0,
         1 => app.get_shortcuts_count(),
         _ => app.get_shortcuts_count() + app.get_commands_count(),
@@ -51,8 +97,10 @@ fn render_section(
         .iter()
         .enumerate()
         .map(|(i, (key, desc))| {
-            let global_index = offset + i;
-            let style = if global_index == app.selected_index {
+            let local_index = i;
+            let is_selected = is_active && local_index == app.selected_index_in_section;
+
+            let style = if is_selected {
                 Style::default()
                     .fg(color)
                     .add_modifier(Modifier::BOLD)
@@ -61,23 +109,32 @@ fn render_section(
                 Style::default()
             };
 
-            let content = if global_index == app.selected_index {
-                format!("► {} │ {}", key, desc)
-            } else {
-                format!("  {} │ {}", key, desc)
-            };
+            let marker = if is_selected { "► " } else { "  " };
+            let content = format!("{}{} │ {}", marker, key, desc);
 
             ListItem::new(Line::from(Span::styled(content, style)))
         })
         .collect();
 
+    let border_style = if is_active {
+        Style::default().fg(color).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+
+    let title_style = if is_active {
+        Style::default().fg(color).add_modifier(Modifier::BOLD)
+    } else {
+        Style::default().fg(Color::DarkGray)
+    };
+
     let list = List::new(items)
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title(title)
-                .title_style(Style::default().fg(color).add_modifier(Modifier::BOLD))
-                .border_style(Style::default().fg(color))
+                .title(format!(" {} [{}] ", title, if is_active { "●" } else { "○" }))
+                .title_style(title_style)
+                .border_style(border_style),
         );
 
     frame.render_widget(list, area);

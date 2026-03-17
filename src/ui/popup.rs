@@ -22,19 +22,27 @@ pub fn render_search_popup(frame: &mut Frame, app: &App) {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title("搜索 (/ 关闭)")
+                .title("搜索 (Esc 关闭)")
                 .style(Style::default().fg(Color::Yellow)),
         )
         .style(Style::default().add_modifier(Modifier::REVERSED));
 
     frame.render_widget(input, chunks[0]);
 
-    // 渲染结果
+    // 渲染结果 - 计算匹配数量
+    let mut match_count = 0;
+    let entries = app.get_all_entries_for_search();
+    for (_, _, key, desc) in entries.iter() {
+        if key.contains(&app.search_query) || desc.contains(&app.search_query) {
+            match_count += 1;
+        }
+    }
+
     if !app.search_query.is_empty() {
-        let results = if app.search_results.is_empty() {
+        let results = if match_count == 0 {
             "无匹配结果"
         } else {
-            &format!("找到 {} 个匹配", app.search_results.len())
+            &format!("找到 {} 个匹配", match_count)
         };
 
         let result_text = Paragraph::new(results.to_string())

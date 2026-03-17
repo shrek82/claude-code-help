@@ -7,10 +7,10 @@ pub enum InputMode {
 }
 
 pub struct App {
+    pub current_section: usize, // 当前选中的列 (0-2)
+    pub selected_index_in_section: usize, // 当前列内的选中索引
     pub input_mode: InputMode,
     pub search_query: String,
-    pub search_results: Vec<usize>,
-    pub selected_index: usize, // 全局索引
     pub custom_store: CustomStore,
     pub custom_path: String,
     pub should_quit: bool,
@@ -19,10 +19,10 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         Self {
+            current_section: 0,
+            selected_index_in_section: 0,
             input_mode: InputMode::Normal,
             search_query: String::new(),
-            search_results: Vec::new(),
-            selected_index: 0,
             custom_store: CustomStore::default(),
             custom_path: String::new(),
             should_quit: false,
@@ -44,40 +44,16 @@ impl App {
             .unwrap_or_else(|| "custom_entries.json".to_string())
     }
 
-    pub fn toggle_search(&mut self) {
-        self.input_mode = match self.input_mode {
-            InputMode::Normal => {
-                self.search_query.clear();
-                self.search_results.clear();
-                InputMode::Searching
-            }
-            InputMode::Searching => {
-                self.search_results.clear();
-                InputMode::Normal
-            }
-        };
-    }
-
-    pub fn update_search(&mut self) {
-        self.search_results.clear();
-        if self.search_query.is_empty() {
-            return;
-        }
-
-        let all_entries = self.get_all_entries_with_section();
-        for (global_idx, _, _) in all_entries.iter() {
-            let key = &self.get_entry_key(*global_idx);
-            let desc = &self.get_entry_desc(*global_idx);
-            if key.contains(&self.search_query) || desc.contains(&self.search_query) {
-                self.search_results.push(*global_idx);
-            }
-        }
-        if !self.search_results.is_empty() && !self.search_results.contains(&self.selected_index) {
-            self.selected_index = self.search_results[0];
+    // 获取指定列的条目数量
+    pub fn get_section_count(&self, section_index: usize) -> usize {
+        match section_index {
+            0 => self.get_shortcuts_count(),
+            1 => self.get_commands_count(),
+            _ => self.custom_store.entries.len(),
         }
     }
 
-    // 获取单个分区的条目
+    // 获取指定分区的条目
     pub fn get_section_entries(&self, section_index: usize) -> Vec<(String, String)> {
         match section_index {
             0 => BuiltinEntry::all()
@@ -98,30 +74,6 @@ impl App {
         }
     }
 
-    // 获取所有条目的全局索引和所属分区
-    pub fn get_all_entries_with_section(&self) -> Vec<(usize, usize, String)> {
-        let mut result = Vec::new();
-        let mut global_idx = 0;
-
-        // 快捷键
-        for _ in 0..self.get_shortcuts_count() {
-            result.push((global_idx, 0, String::new()));
-            global_idx += 1;
-        }
-        // 斜杠命令
-        for _ in 0..self.get_commands_count() {
-            result.push((global_idx, 1, String::new()));
-            global_idx += 1;
-        }
-        // 自定义
-        for _ in 0..self.custom_store.entries.len() {
-            result.push((global_idx, 2, String::new()));
-            global_idx += 1;
-        }
-
-        result
-    }
-
     pub fn get_shortcuts_count(&self) -> usize {
         BuiltinEntry::all()
             .into_iter()
@@ -136,74 +88,77 @@ impl App {
             .count()
     }
 
-    pub fn get_total_entries_count(&self) -> usize {
-        self.get_shortcuts_count() + self.get_commands_count() + self.custom_store.entries.len()
+    // 切换到下一列
+    pub fn next_section(&mut self) {
+        self.current_section = (self.current_section + 1) % 3;
+        self.selected_index_in_section = 0;
     }
 
-    fn get_entry_key(&self, global_index: usize) -> String {
-        let shortcuts_count = self.get_shortcuts_count();
-        let commands_count = self.get_commands_count();
+    // 切换到上一列
+    pub fn prev_section(&mut self) {
+        self.current_section = (self.current_section + 2) % 3;
+        self.selected_index_in_section = 0;
+    }
 
-        if global_index < shortcuts_count {
-            BuiltinEntry::all()
-                .into_iter()
-                .filter(|e| e.category == Category::Shortcuts)
-                .nth(global_index)
-                .map(|e| e.key)
-                .unwrap_or_default()
-        } else if global_index < shortcuts_count + commands_count {
-            let idx = global_index - shortcuts_count;
-            BuiltinEntry::all()
-                .into_iter()
-                .filter(|e| e.category == Category::SlashCommands)
-                .nth(idx)
-                .map(|e| e.key)
-                .unwrap_or_default()
-        } else {
-            let idx = global_index - shortcuts_count - commands_count;
-            self.custom_store.entries.get(idx).map(|e| e.key.clone()).unwrap_or_default()
+    // 在当前列内向下移动
+    pub fn next_in_section(&mut self) {
+        let count = self.get_section_count(self.current_section);
+        if count > 0 {
+            self.selected_index_in_section = (self.selected_index_in_section + 1) % count;
         }
     }
 
-    fn get_entry_desc(&self, global_index: usize) -> String {
-        let shortcuts_count = self.get_shortcuts_count();
-        let commands_count = self.get_commands_count();
-
-        if global_index < shortcuts_count {
-            BuiltinEntry::all()
-                .into_iter()
-                .filter(|e| e.category == Category::Shortcuts)
-                .nth(global_index)
-                .map(|e| e.description)
-                .unwrap_or_default()
-        } else if global_index < shortcuts_count + commands_count {
-            let idx = global_index - shortcuts_count;
-            BuiltinEntry::all()
-                .into_iter()
-                .filter(|e| e.category == Category::SlashCommands)
-                .nth(idx)
-                .map(|e| e.description)
-                .unwrap_or_default()
-        } else {
-            let idx = global_index - shortcuts_count - commands_count;
-            self.custom_store.entries.get(idx).map(|e| e.description.clone()).unwrap_or_default()
+    // 在当前列内向上移动
+    pub fn prev_in_section(&mut self) {
+        let count = self.get_section_count(self.current_section);
+        if count > 0 {
+            self.selected_index_in_section = (self.selected_index_in_section + count - 1) % count;
         }
     }
 
-    // 全局导航：下一条
-    pub fn next_item(&mut self) {
-        let total = self.get_total_entries_count();
-        if total > 0 {
-            self.selected_index = (self.selected_index + 1) % total;
+    pub fn toggle_search(&mut self) {
+        self.input_mode = match self.input_mode {
+            InputMode::Normal => {
+                self.search_query.clear();
+                InputMode::Searching
+            }
+            InputMode::Searching => InputMode::Normal,
+        };
+    }
+
+    pub fn update_search(&mut self) {
+        // 搜索时高亮第一个匹配项所在的列和位置
+        let all_entries = self.get_all_entries_for_search();
+        for (section_idx, local_idx, key, desc) in all_entries.iter() {
+            if key.contains(&self.search_query) || desc.contains(&self.search_query) {
+                self.current_section = *section_idx;
+                self.selected_index_in_section = *local_idx;
+                return;
+            }
         }
     }
 
-    // 全局导航：上一条
-    pub fn prev_item(&mut self) {
-        let total = self.get_total_entries_count();
-        if total > 0 {
-            self.selected_index = (self.selected_index + total - 1) % total;
+    pub fn get_all_entries_for_search(&self) -> Vec<(usize, usize, String, String)> {
+        let mut result = Vec::new();
+
+        // 快捷键
+        let shortcuts = self.get_section_entries(0);
+        for (i, (key, desc)) in shortcuts.iter().enumerate() {
+            result.push((0, i, key.clone(), desc.clone()));
         }
+
+        // 斜杠命令
+        let commands = self.get_section_entries(1);
+        for (i, (key, desc)) in commands.iter().enumerate() {
+            result.push((1, i, key.clone(), desc.clone()));
+        }
+
+        // 自定义
+        for (i, entry) in self.custom_store.entries.iter().enumerate() {
+            result.push((2, i, entry.key.clone(), entry.description.clone()));
+        }
+
+        result
     }
 
     pub fn save_custom_entries(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -222,20 +177,21 @@ impl App {
     }
 
     pub fn delete_selected_custom(&mut self) {
-        let shortcuts_count = self.get_shortcuts_count();
-        let commands_count = self.get_commands_count();
-        let custom_start = shortcuts_count + commands_count;
-
-        if self.selected_index >= custom_start {
-            let custom_idx = self.selected_index - custom_start;
-            if custom_idx < self.custom_store.entries.len() {
-                self.custom_store.entries.remove(custom_idx);
-                // 调整选中索引
-                if self.selected_index >= custom_start + self.custom_store.entries.len() {
-                    self.selected_index = self.selected_index.saturating_sub(1);
+        if self.current_section == 2 && !self.custom_store.entries.is_empty() {
+            if self.selected_index_in_section < self.custom_store.entries.len() {
+                self.custom_store.entries.remove(self.selected_index_in_section);
+                // 调整索引
+                if self.selected_index_in_section >= self.custom_store.entries.len() {
+                    self.selected_index_in_section = self.selected_index_in_section.saturating_sub(1);
                 }
             }
         }
+    }
+
+    // 获取当前选中的条目
+    pub fn get_selected_entry(&self) -> Option<(String, String)> {
+        let entries = self.get_section_entries(self.current_section);
+        entries.get(self.selected_index_in_section).cloned()
     }
 }
 
@@ -246,17 +202,38 @@ mod tests {
     #[test]
     fn test_app_initial_state() {
         let app = App::new();
+        assert_eq!(app.current_section, 0);
+        assert_eq!(app.selected_index_in_section, 0);
         assert!(matches!(app.input_mode, InputMode::Normal));
-        assert!(app.search_query.is_empty());
     }
 
     #[test]
-    fn test_navigation() {
+    fn test_section_navigation() {
         let mut app = App::new();
-        let initial = app.selected_index;
-        app.next_item();
-        assert!(app.selected_index > initial);
-        app.prev_item();
-        assert_eq!(app.selected_index, initial);
+        app.next_section();
+        assert_eq!(app.current_section, 1);
+        app.next_section();
+        assert_eq!(app.current_section, 2);
+        app.next_section();
+        assert_eq!(app.current_section, 0);
+
+        app.prev_section();
+        assert_eq!(app.current_section, 2);
+    }
+
+    #[test]
+    fn test_in_section_navigation() {
+        let mut app = App::new();
+        let shortcuts_count = app.get_shortcuts_count();
+        app.next_in_section();
+        assert_eq!(app.selected_index_in_section, 1);
+        app.prev_in_section();
+        assert_eq!(app.selected_index_in_section, 0);
+
+        // 测试循环
+        for _ in 0..shortcuts_count {
+            app.next_in_section();
+        }
+        assert_eq!(app.selected_index_in_section, 0);
     }
 }
