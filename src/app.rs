@@ -9,6 +9,7 @@ pub enum InputMode {
 pub struct App {
     pub current_section: usize, // 当前选中的列 (0-2)
     pub selected_index_in_section: usize, // 当前列内的选中索引
+    pub scroll_offset: usize, // 滚动偏移（用于长列表）
     pub input_mode: InputMode,
     pub search_query: String,
     pub should_quit: bool,
@@ -19,6 +20,7 @@ impl Default for App {
         Self {
             current_section: 0,
             selected_index_in_section: 0,
+            scroll_offset: 0,
             input_mode: InputMode::Normal,
             search_query: String::new(),
             should_quit: false,
@@ -86,12 +88,14 @@ impl App {
     pub fn next_section(&mut self) {
         self.current_section = (self.current_section + 1) % 3;
         self.selected_index_in_section = 0;
+        self.scroll_offset = 0;
     }
 
     // 切换到上一列
     pub fn prev_section(&mut self) {
         self.current_section = (self.current_section + 2) % 3;
         self.selected_index_in_section = 0;
+        self.scroll_offset = 0;
     }
 
     // 在当前列内向下移动
@@ -99,6 +103,10 @@ impl App {
         let count = self.get_section_count(self.current_section);
         if count > 0 {
             self.selected_index_in_section = (self.selected_index_in_section + 1) % count;
+            // 确保选中项在可见区域内
+            if self.selected_index_in_section >= self.scroll_offset + 20 {
+                self.scroll_offset = self.selected_index_in_section - 19;
+            }
         }
     }
 
@@ -107,6 +115,10 @@ impl App {
         let count = self.get_section_count(self.current_section);
         if count > 0 {
             self.selected_index_in_section = (self.selected_index_in_section + count - 1) % count;
+            // 确保选中项在可见区域内
+            if self.selected_index_in_section < self.scroll_offset {
+                self.scroll_offset = self.selected_index_in_section;
+            }
         }
     }
 

@@ -86,19 +86,26 @@ fn render_section(
 ) {
     let entries = app.get_section_entries(section_index);
 
-    // 计算全局索引偏移（用于搜索高亮）
-    let _offset = match section_index {
-        0 => 0,
-        1 => app.get_shortcuts_count(),
-        _ => app.get_shortcuts_count() + app.get_cli_commands_count(),
-    };
+    // 计算可用高度（减去边框和标题）
+    let visible_height = area.height.saturating_sub(2) as usize; // 减去上下边框
 
+    // 计算滚动偏移，确保选中项可见
+    let mut scroll_offset = app.scroll_offset;
+    if app.selected_index_in_section < scroll_offset {
+        scroll_offset = app.selected_index_in_section;
+    } else if app.selected_index_in_section >= scroll_offset + visible_height {
+        scroll_offset = app.selected_index_in_section - visible_height + 1;
+    }
+
+    // 只渲染可见区域的条目
     let items: Vec<ListItem> = entries
         .iter()
+        .skip(scroll_offset)
+        .take(visible_height)
         .enumerate()
         .map(|(i, (key, desc))| {
-            let local_index = i;
-            let is_selected = is_active && local_index == app.selected_index_in_section;
+            let actual_index = scroll_offset + i;
+            let is_selected = is_active && actual_index == app.selected_index_in_section;
 
             let style = if is_selected {
                 Style::default()
@@ -116,6 +123,9 @@ fn render_section(
         })
         .collect();
 
+    // 更新 scroll_offset
+    // 注意：这里我们不能直接修改 app，所以使用局部变量
+
     let border_style = if is_active {
         Style::default().fg(color).add_modifier(Modifier::BOLD)
     } else {
@@ -128,11 +138,20 @@ fn render_section(
         Style::default().fg(color)
     };
 
+    // 添加滚动指示器到标题
+    let scroll_indicator = if scroll_offset > 0 {
+        format!(" ▲{}▼", entries.len())
+    } else if entries.len() > visible_height {
+        format!(" {}▼", entries.len())
+    } else {
+        String::new()
+    };
+
     let list = List::new(items)
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .title(format!(" {} [{}] ", title, if is_active { "●" } else { "○" }))
+                .title(format!(" {} [{}]{} ", title, if is_active { "●" } else { "○" }, scroll_indicator))
                 .title_style(title_style)
                 .border_style(border_style),
         );
