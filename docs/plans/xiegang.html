@@ -1,0 +1,273 @@
+<div class="px-[var(--page-padding)] grow max-w-none table">
+    <table
+        class="m-0 min-w-full w-full max-w-none table [&amp;_td]:min-w-[150px] [&amp;_th]:text-left [&amp;_td[data-numeric]]:tabular-nums">
+        <thead>
+            <tr>
+                <th style="text-align: left;">命令</th>
+                <th style="text-align: left;">目的</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: left;"><code>/add-dir &lt;path&gt;</code></td>
+                <td style="text-align: left;">将新的工作目录添加到当前会话</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/agents</code></td>
+                <td style="text-align: left;">管理 <a class="link" href="/docs/zh-CN/sub-agents">agent</a> 配置</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/btw &lt;question&gt;</code></td>
+                <td style="text-align: left;">提出快速<a href="#side-questions-with-%2Fbtw" class="link">侧问题</a>，无需添加到对话
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/chrome</code></td>
+                <td style="text-align: left;">配置<a class="link" href="/docs/zh-CN/chrome">Chrome 中的 Claude</a> 设置</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/clear</code></td>
+                <td style="text-align: left;">清除对话历史并释放上下文。别名：<code>/reset</code>、<code>/new</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/compact [instructions]</code></td>
+                <td style="text-align: left;">压缩对话，可选的焦点说明</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/config</code></td>
+                <td style="text-align: left;">打开<a class="link" href="/docs/zh-CN/settings">设置</a>界面以调整主题、模型、<a
+                        class="link" href="/docs/zh-CN/output-styles">输出样式</a>和其他首选项。别名：<code>/settings</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/context</code></td>
+                <td style="text-align: left;">将当前上下文使用情况可视化为彩色网格</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/copy</code></td>
+                <td style="text-align: left;">将最后一个助手响应复制到剪贴板。当存在代码块时，显示交互式选择器以选择单个块或完整响应</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/cost</code></td>
+                <td style="text-align: left;">显示令牌使用统计信息。有关特定于订阅的详细信息，请参阅<a class="link"
+                        href="/docs/zh-CN/costs#using-the-cost-command">成本跟踪指南</a></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/desktop</code></td>
+                <td style="text-align: left;">在 Claude Code 桌面应用中继续当前会话。仅限 macOS 和 Windows。别名：<code>/app</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/diff</code></td>
+                <td style="text-align: left;">打开交互式差异查看器，显示未提交的更改和每个回合的差异。使用左/右箭头在当前 git 差异和单个 Claude 回合之间切换，使用上/下浏览文件
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/doctor</code></td>
+                <td style="text-align: left;">诊断并验证您的 Claude Code 安装和设置</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/exit</code></td>
+                <td style="text-align: left;">退出 CLI。别名：<code>/quit</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/export [filename]</code></td>
+                <td style="text-align: left;">将当前对话导出为纯文本。使用文件名时，直接写入该文件。不使用时，打开对话框以复制到剪贴板或保存到文件</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/extra-usage</code></td>
+                <td style="text-align: left;">配置额外使用以在达到速率限制时继续工作</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/fast [on|off]</code></td>
+                <td style="text-align: left;">切换<a class="link" href="/docs/zh-CN/fast-mode">快速模式</a>开启或关闭</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/feedback [report]</code></td>
+                <td style="text-align: left;">提交关于 Claude Code 的反馈。别名：<code>/bug</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/fork [name]</code></td>
+                <td style="text-align: left;">在此点创建当前对话的分支</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/help</code></td>
+                <td style="text-align: left;">显示帮助和可用命令</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/hooks</code></td>
+                <td style="text-align: left;">管理工具事件的 <a class="link" href="/docs/zh-CN/hooks">hook</a> 配置</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/ide</code></td>
+                <td style="text-align: left;">管理 IDE 集成并显示状态</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/init</code></td>
+                <td style="text-align: left;">使用 <code>CLAUDE.md</code> 指南初始化项目</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/insights</code></td>
+                <td style="text-align: left;">生成报告，分析您的 Claude Code 会话，包括项目区域、交互模式和摩擦点</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/install-github-app</code></td>
+                <td style="text-align: left;">为存储库设置 <a class="link" href="/docs/zh-CN/github-actions">Claude GitHub
+                        Actions</a> 应用。引导您选择存储库并配置集成</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/install-slack-app</code></td>
+                <td style="text-align: left;">安装 Claude Slack 应用。打开浏览器以完成 OAuth 流程</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/keybindings</code></td>
+                <td style="text-align: left;">打开或创建您的快捷键配置文件</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/login</code></td>
+                <td style="text-align: left;">登录到您的 Anthropic 账户</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/logout</code></td>
+                <td style="text-align: left;">从您的 Anthropic 账户登出</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/mcp</code></td>
+                <td style="text-align: left;">管理 MCP server 连接和 OAuth 身份验证</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/memory</code></td>
+                <td style="text-align: left;">编辑 <code>CLAUDE.md</code> 内存文件，启用或禁用<a class="link"
+                        href="/docs/zh-CN/memory#auto-memory">自动内存</a>，并查看自动内存条目</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/mobile</code></td>
+                <td style="text-align: left;">显示二维码以下载 Claude 移动应用。别名：<code>/ios</code>、<code>/android</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/model [model]</code></td>
+                <td style="text-align: left;">选择或更改 AI 模型。对于支持的模型，使用左/右箭头<a class="link"
+                        href="/docs/zh-CN/model-config#adjust-effort-level">调整努力级别</a>。更改立即生效，无需等待当前响应完成</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/passes</code></td>
+                <td style="text-align: left;">与朋友分享一周免费的 Claude Code。仅在您的账户符合条件时可见</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/permissions</code></td>
+                <td style="text-align: left;">查看或更新<a class="link"
+                        href="/docs/zh-CN/permissions#manage-permissions">权限</a>。别名：<code>/allowed-tools</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/plan</code></td>
+                <td style="text-align: left;">直接从提示进入 plan mode</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/plugin</code></td>
+                <td style="text-align: left;">管理 Claude Code <a class="link" href="/docs/zh-CN/plugins">plugins</a></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/pr-comments [PR]</code></td>
+                <td style="text-align: left;">获取并显示来自 GitHub pull request 的评论。自动检测当前分支的 PR，或传递 PR URL 或编号。需要
+                    <code>gh</code> CLI
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/privacy-settings</code></td>
+                <td style="text-align: left;">查看和更新您的隐私设置。仅对 Pro 和 Max 计划订阅者可用</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/release-notes</code></td>
+                <td style="text-align: left;">查看完整的更改日志，最新版本最接近您的提示</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/reload-plugins</code></td>
+                <td style="text-align: left;">重新加载所有活跃 <a class="link" href="/docs/zh-CN/plugins">plugins</a>
+                    以应用待处理的更改，无需重启。报告已加载的内容并注明需要重启的更改</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/remote-control</code></td>
+                <td style="text-align: left;">使此会话可从 claude.ai 进行<a class="link"
+                        href="/docs/zh-CN/remote-control">远程控制</a>。别名：<code>/rc</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/remote-env</code></td>
+                <td style="text-align: left;">为<a class="link"
+                        href="/docs/zh-CN/claude-code-on-the-web#teleport-a-web-session-to-your-terminal">teleport
+                        会话</a>配置默认远程环境</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/rename [name]</code></td>
+                <td style="text-align: left;">重命名当前会话。不使用名称时，从对话历史自动生成</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/resume [session]</code></td>
+                <td style="text-align: left;">按 ID 或名称恢复对话，或打开会话选择器。别名：<code>/continue</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/review</code></td>
+                <td style="text-align: left;">已弃用。改为安装 <a
+                        href="https://github.com/anthropics/claude-code-marketplace/blob/main/code-review/README.md"
+                        target="_blank" rel="noreferrer" class="link"><code>code-review</code>
+                        plugin</a>：<code>claude plugin install code-review@claude-code-marketplace</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/rewind</code></td>
+                <td style="text-align: left;">将对话和/或代码回退到上一个点，或从选定的消息进行总结。请参阅<a class="link"
+                        href="/docs/zh-CN/checkpointing">checkpointing</a>。别名：<code>/checkpoint</code></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/sandbox</code></td>
+                <td style="text-align: left;">切换<a class="link" href="/docs/zh-CN/sandboxing">sandbox 模式</a>。仅在支持的平台上可用
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/security-review</code></td>
+                <td style="text-align: left;">分析当前分支上的待处理更改以查找安全漏洞。审查 git 差异并识别风险，如注入、身份验证问题和数据泄露</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/skills</code></td>
+                <td style="text-align: left;">列出可用的 <a class="link" href="/docs/zh-CN/skills">skills</a></td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/stats</code></td>
+                <td style="text-align: left;">可视化每日使用情况、会话历史、连胜和模型偏好</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/status</code></td>
+                <td style="text-align: left;">打开设置界面（状态选项卡），显示版本、模型、账户和连接性</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/statusline</code></td>
+                <td style="text-align: left;">配置 Claude Code 的<a class="link"
+                        href="/docs/zh-CN/statusline">状态行</a>。描述您想要的内容，或不带参数运行以从您的 shell 提示自动配置</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/stickers</code></td>
+                <td style="text-align: left;">订购 Claude Code 贴纸</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/tasks</code></td>
+                <td style="text-align: left;">列出和管理后台任务</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/terminal-setup</code></td>
+                <td style="text-align: left;">为 Shift+Enter 和其他快捷键配置终端快捷键。仅在需要它的终端中可见，如 VS Code、Alacritty 或 Warp</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/theme</code></td>
+                <td style="text-align: left;">更改颜色主题。包括浅色和深色变体、色盲无障碍（daltonized）主题和使用您终端的调色板的 ANSI 主题</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/upgrade</code></td>
+                <td style="text-align: left;">打开升级页面以切换到更高的计划层级</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/usage</code></td>
+                <td style="text-align: left;">显示计划使用限制和速率限制状态</td>
+            </tr>
+            <tr>
+                <td style="text-align: left;"><code>/vim</code></td>
+                <td style="text-align: left;">在 Vim 和正常编辑模式之间切换</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
