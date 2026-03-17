@@ -37,7 +37,12 @@ fn handle_normal_mode(app: &mut App, key: KeyCode) {
 
 fn handle_searching_mode(app: &mut App, key: KeyCode) {
     match key {
-        KeyCode::Esc | KeyCode::Enter => app.toggle_search(),
+        KeyCode::Esc => app.toggle_search(),
+        KeyCode::Enter => {
+            // 回车键：复制选中命令并退出搜索
+            app.copy_selection();
+            app.toggle_search();
+        }
         KeyCode::Backspace => {
             app.search_query.pop();
             app.update_search();
