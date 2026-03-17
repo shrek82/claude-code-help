@@ -1,0 +1,87 @@
+<table
+    class="m-0 min-w-full w-full max-w-none table [&amp;_td]:min-w-[150px] [&amp;_th]:text-left [&amp;_td[data-numeric]]:tabular-nums">
+    <thead>
+        <tr>
+            <th style="text-align: left;">命令</th>
+            <th style="text-align: left;">描述</th>
+            <th style="text-align: left;">示例</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="text-align: left;"><code>claude</code></td>
+            <td style="text-align: left;">启动交互式会话</td>
+            <td style="text-align: left;"><code>claude</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude "query"</code></td>
+            <td style="text-align: left;">使用初始提示启动交互式会话</td>
+            <td style="text-align: left;"><code>claude "explain this project"</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude -p "query"</code></td>
+            <td style="text-align: left;">通过 SDK 查询，然后退出</td>
+            <td style="text-align: left;"><code>claude -p "explain this function"</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>cat file | claude -p "query"</code></td>
+            <td style="text-align: left;">处理管道内容</td>
+            <td style="text-align: left;"><code>cat logs.txt | claude -p "explain"</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude -c</code></td>
+            <td style="text-align: left;">继续当前目录中最近的对话</td>
+            <td style="text-align: left;"><code>claude -c</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude -c -p "query"</code></td>
+            <td style="text-align: left;">通过 SDK 继续</td>
+            <td style="text-align: left;"><code>claude -c -p "Check for type errors"</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude -r "&lt;session&gt;" "query"</code></td>
+            <td style="text-align: left;">按 ID 或名称恢复会话</td>
+            <td style="text-align: left;"><code>claude -r "auth-refactor" "Finish this PR"</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude update</code></td>
+            <td style="text-align: left;">更新到最新版本</td>
+            <td style="text-align: left;"><code>claude update</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude auth login</code></td>
+            <td style="text-align: left;">登录您的 Anthropic 账户。使用 <code>--email</code> 预填充您的电子邮件地址，使用 <code>--sso</code> 强制
+                SSO 身份验证</td>
+            <td style="text-align: left;"><code>claude auth login --email user@example.com --sso</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude auth logout</code></td>
+            <td style="text-align: left;">从您的 Anthropic 账户登出</td>
+            <td style="text-align: left;"><code>claude auth logout</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude auth status</code></td>
+            <td style="text-align: left;">以 JSON 格式显示身份验证状态。使用 <code>--text</code> 获得人类可读的输出。如果已登录则以代码 0 退出，如果未登录则以代码 1
+                退出</td>
+            <td style="text-align: left;"><code>claude auth status</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude agents</code></td>
+            <td style="text-align: left;">列出所有已配置的 <a class="link" href="/docs/zh-CN/sub-agents">subagents</a>，按来源分组
+            </td>
+            <td style="text-align: left;"><code>claude agents</code></td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude mcp</code></td>
+            <td style="text-align: left;">配置 Model Context Protocol (MCP) 服务器</td>
+            <td style="text-align: left;">请参阅 <a class="link" href="/docs/zh-CN/mcp">Claude Code MCP 文档</a>。</td>
+        </tr>
+        <tr>
+            <td style="text-align: left;"><code>claude remote-control</code></td>
+            <td style="text-align: left;">启动 <a class="link" href="/docs/zh-CN/remote-control">Remote Control 会话</a>以从
+                Claude.ai 或 Claude 应用控制 Claude Code，同时在本地运行。请参阅 <a class="link" href="/docs/zh-CN/remote-control">Remote
+                    Control</a> 了解标志</td>
+            <td style="text-align: left;"><code>claude remote-control</code></td>
+        </tr>
+    </tbody>
+</table>

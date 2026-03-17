@@ -2,12 +2,15 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Modifier},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Clear, Paragraph},
 };
 use crate::app::App;
 
 pub fn render_search_popup(frame: &mut Frame, app: &App) {
     let area = centered_rect(60, 20, frame.area());
+
+    // 首先清除背景
+    frame.render_widget(Clear, area);
 
     let chunks = Layout::default()
         .direction(Direction::Vertical)
