@@ -8,7 +8,33 @@ use ratatui::{
 use crate::app::App;
 
 pub fn render_search_popup(frame: &mut Frame, app: &mut App) {
-    let area = centered_rect(50, 40, frame.area());
+    // 渲染结果列表
+    let entries = app.get_all_entries_for_search();
+    let mut matching_items: Vec<(usize, usize, String, String)> = Vec::new();
+
+    for (section_idx, local_idx, key, desc) in entries.iter() {
+        if key.contains(&app.search_query) || desc.contains(&app.search_query) {
+            matching_items.push((*section_idx, *local_idx, key.clone(), desc.clone()));
+        }
+    }
+
+    // 根据搜索结果数量动态计算弹窗高度
+    // 输入框 3 行 + 上下边框 2 行 = 5 行基础高度
+    // 结果列表：每个结果 1 行，最多显示 10 条
+    let result_count = if app.search_query.is_empty() || matching_items.is_empty() {
+        2  // 无结果时显示 2 行提示
+    } else {
+        matching_items.len().min(10)
+    };
+    let total_height_rows = 5 + result_count;
+
+    // 计算最小高度百分比（基于屏幕高度）
+    let screen_height = frame.area().height;
+    let height_percent = ((total_height_rows as f32 / screen_height as f32) * 100.0).ceil() as u16;
+    // 限制最小 20%，最大 80%
+    let height_percent = height_percent.max(20).min(80);
+
+    let area = centered_rect(50, height_percent, frame.area());
 
     // 清除弹窗区域背景
     frame.render_widget(Clear, area);
@@ -34,15 +60,6 @@ pub fn render_search_popup(frame: &mut Frame, app: &mut App) {
     frame.render_widget(input, chunks[0]);
 
     // 渲染结果列表
-    let entries = app.get_all_entries_for_search();
-    let mut matching_items: Vec<(usize, usize, String, String)> = Vec::new();
-
-    for (section_idx, local_idx, key, desc) in entries.iter() {
-        if key.contains(&app.search_query) || desc.contains(&app.search_query) {
-            matching_items.push((*section_idx, *local_idx, key.clone(), desc.clone()));
-        }
-    }
-
     if !app.search_query.is_empty() {
         let items: Vec<ListItem> = if matching_items.is_empty() {
             vec![
