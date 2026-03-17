@@ -7,13 +7,13 @@ use ratatui::{
 };
 use crate::app::App;
 
+const SECTION_TITLES: [&str; 3] = ["快捷键", "斜杠命令", "CLI 参考"];
+
 const SECTION_COLORS: [Color; 3] = [
     Color::Rgb(0, 135, 255),   // 蓝色 - 快捷键
     Color::Rgb(0, 200, 100),   // 绿色 - 斜杠命令
-    Color::Rgb(150, 100, 255), // 紫色 - 自定义
+    Color::Rgb(255, 140, 0),   // 橙色 - CLI 参考
 ];
-
-const SECTION_TITLES: [&str; 3] = ["快捷键", "斜杠命令", "自定义"];
 
 pub fn render_tabs(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {
     // 垂直分为：标题 + 三列内容
@@ -90,7 +90,7 @@ fn render_section(
     let _offset = match section_index {
         0 => 0,
         1 => app.get_shortcuts_count(),
-        _ => app.get_shortcuts_count() + app.get_commands_count(),
+        _ => app.get_shortcuts_count() + app.get_cli_commands_count(),
     };
 
     let items: Vec<ListItem> = entries

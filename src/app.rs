@@ -1,4 +1,4 @@
-use crate::data::{BuiltinEntry, Category, CustomStore, CustomEntry};
+use crate::data::{BuiltinEntry, Category};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputMode {
@@ -11,8 +11,6 @@ pub struct App {
     pub selected_index_in_section: usize, // 当前列内的选中索引
     pub input_mode: InputMode,
     pub search_query: String,
-    pub custom_store: CustomStore,
-    pub custom_path: String,
     pub should_quit: bool,
 }
 
@@ -23,8 +21,6 @@ impl Default for App {
             selected_index_in_section: 0,
             input_mode: InputMode::Normal,
             search_query: String::new(),
-            custom_store: CustomStore::default(),
-            custom_path: String::new(),
             should_quit: false,
         }
     }
@@ -32,24 +28,15 @@ impl Default for App {
 
 impl App {
     pub fn new() -> Self {
-        let mut app = Self::default();
-        app.custom_path = app.get_custom_path();
-        app.custom_store = CustomStore::load(&app.custom_path).unwrap_or_default();
-        app
-    }
-
-    fn get_custom_path(&self) -> String {
-        directories::BaseDirs::new()
-            .map(|d| d.home_dir().join(".claude/cheatsheet/custom_entries.json").to_string_lossy().to_string())
-            .unwrap_or_else(|| "custom_entries.json".to_string())
+        Self::default()
     }
 
     // 获取指定列的条目数量
     pub fn get_section_count(&self, section_index: usize) -> usize {
         match section_index {
             0 => self.get_shortcuts_count(),
-            1 => self.get_commands_count(),
-            _ => self.custom_store.entries.len(),
+            1 => self.get_slash_commands_count(),
+            _ => self.get_cli_commands_count(),
         }
     }
 
@@ -66,10 +53,10 @@ impl App {
                 .filter(|e| e.category == Category::SlashCommands)
                 .map(|e| (e.key, e.description))
                 .collect(),
-            _ => self.custom_store
-                .entries
-                .iter()
-                .map(|e| (e.key.clone(), e.description.clone()))
+            _ => BuiltinEntry::all()
+                .into_iter()
+                .filter(|e| e.category == Category::CliCommands)
+                .map(|e| (e.key, e.description))
                 .collect(),
         }
     }
@@ -81,10 +68,17 @@ impl App {
             .count()
     }
 
-    pub fn get_commands_count(&self) -> usize {
+    pub fn get_slash_commands_count(&self) -> usize {
         BuiltinEntry::all()
             .into_iter()
             .filter(|e| e.category == Category::SlashCommands)
+            .count()
+    }
+
+    pub fn get_cli_commands_count(&self) -> usize {
+        BuiltinEntry::all()
+            .into_iter()
+            .filter(|e| e.category == Category::CliCommands)
             .count()
     }
 
@@ -127,7 +121,6 @@ impl App {
     }
 
     pub fn update_search(&mut self) {
-        // 搜索时高亮第一个匹配项所在的列和位置
         let all_entries = self.get_all_entries_for_search();
         for (section_idx, local_idx, key, desc) in all_entries.iter() {
             if key.contains(&self.search_query) || desc.contains(&self.search_query) {
@@ -153,45 +146,13 @@ impl App {
             result.push((1, i, key.clone(), desc.clone()));
         }
 
-        // 自定义
-        for (i, entry) in self.custom_store.entries.iter().enumerate() {
-            result.push((2, i, entry.key.clone(), entry.description.clone()));
+        // CLI 参考
+        let cli = self.get_section_entries(2);
+        for (i, (key, desc)) in cli.iter().enumerate() {
+            result.push((2, i, key.clone(), desc.clone()));
         }
 
         result
-    }
-
-    pub fn save_custom_entries(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.custom_store.save(&self.custom_path)?;
-        Ok(())
-    }
-
-    pub fn add_custom_entry(&mut self, key: String, description: String) {
-        let id = uuid::Uuid::new_v4().to_string();
-        self.custom_store.entries.push(CustomEntry {
-            id,
-            key,
-            description,
-            tags: vec![],
-        });
-    }
-
-    pub fn delete_selected_custom(&mut self) {
-        if self.current_section == 2 && !self.custom_store.entries.is_empty() {
-            if self.selected_index_in_section < self.custom_store.entries.len() {
-                self.custom_store.entries.remove(self.selected_index_in_section);
-                // 调整索引
-                if self.selected_index_in_section >= self.custom_store.entries.len() {
-                    self.selected_index_in_section = self.selected_index_in_section.saturating_sub(1);
-                }
-            }
-        }
-    }
-
-    // 获取当前选中的条目
-    pub fn get_selected_entry(&self) -> Option<(String, String)> {
-        let entries = self.get_section_entries(self.current_section);
-        entries.get(self.selected_index_in_section).cloned()
     }
 }
 
@@ -230,7 +191,6 @@ mod tests {
         app.prev_in_section();
         assert_eq!(app.selected_index_in_section, 0);
 
-        // 测试循环
         for _ in 0..shortcuts_count {
             app.next_in_section();
         }

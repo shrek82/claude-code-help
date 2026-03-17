@@ -1,10 +1,8 @@
-use serde::{Deserialize, Serialize};
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Category {
     Shortcuts,
     SlashCommands,
-    Tips,
+    CliCommands,
 }
 
 #[derive(Debug, Clone)]
@@ -116,16 +114,24 @@ impl BuiltinEntry {
             BuiltinEntry { key: "/status".into(), description: "显示状态信息".into(), category: Category::SlashCommands },
             BuiltinEntry { key: "/stickers".into(), description: "订购贴纸".into(), category: Category::SlashCommands },
             BuiltinEntry { key: "/btw <question>".into(), description: "提出快速侧问题".into(), category: Category::SlashCommands },
+
+            // CLI 参考
+            BuiltinEntry { key: "claude".into(), description: "启动交互式会话".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude \"query\"".into(), description: "使用初始提示启动会话".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude -p \"query\"".into(), description: "通过 SDK 查询，然后退出".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "cat file | claude -p".into(), description: "处理管道内容".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude -c".into(), description: "继续当前目录最近的对话".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude -c -p".into(), description: "通过 SDK 继续".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude -r \"session\"".into(), description: "按 ID 或名称恢复会话".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude update".into(), description: "更新到最新版本".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude auth login".into(), description: "登录 Anthropic 账户".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude auth logout".into(), description: "登出 Anthropic 账户".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude auth status".into(), description: "显示身份验证状态 (JSON)".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude agents".into(), description: "列出所有已配置的 subagents".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude mcp".into(), description: "配置 MCP 服务器".into(), category: Category::CliCommands },
+            BuiltinEntry { key: "claude remote-control".into(), description: "启动 Remote Control 会话".into(), category: Category::CliCommands },
         ]
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CustomEntry {
-    pub id: String,
-    pub key: String,
-    pub description: String,
-    pub tags: Vec<String>,
 }
 
 #[cfg(test)]
@@ -138,6 +144,3 @@ mod tests {
         assert!(!entries.is_empty());
     }
 }
-
-pub mod custom;
-pub use custom::CustomStore;
